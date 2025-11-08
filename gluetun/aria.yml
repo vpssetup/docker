@@ -1,0 +1,27 @@
+version: "3"
+services:
+  vpnaria:
+    image: qmcgaw/gluetun
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - VPN_SERVICE_PROVIDER=protonvpn
+      - VPN_TYPE=wireguard
+      - WIREGUARD_PRIVATE_KEY=xxx
+      - WIREGUARD_ADDRESSES=10.2.0.2/32
+    ports:
+      - "0.0.0.0:8080:8080/tcp" 
+      - 51413:51413/tcp
+      - 51413:51413/udp
+  aria:
+    image: hurlenko/aria2-ariang
+    container_name: aria
+    network_mode: "service:vpnaria"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - ${PWD}/aria-downloads:/aria2/data
+      - ${PWD}/aria-config:/aria2/conf
+    restart: unless-stopped

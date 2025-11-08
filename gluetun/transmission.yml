@@ -1,0 +1,27 @@
+version: "3"
+services:
+  vpntransmission:
+    image: qmcgaw/gluetun
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - VPN_SERVICE_PROVIDER=protonvpn
+      - VPN_TYPE=wireguard
+      - WIREGUARD_PRIVATE_KEY=xxx
+      - WIREGUARD_ADDRESSES=10.2.0.2/32
+    ports:
+      - "0.0.0.0:9091:9091/tcp"
+      - 51413:51413/tcp
+      - 51413:51413/udp
+  transmission:
+    image: lscr.io/linuxserver/transmission:latest
+    container_name: transmission
+    network_mode: "service:vpntransmission"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - ${PWD}/transmission-downloads:/downloads
+      - ${PWD}/transmission-config:/config
+    restart: unless-stopped

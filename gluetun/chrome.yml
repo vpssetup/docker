@@ -1,0 +1,26 @@
+version: '3.7'
+services:
+  vpnchrome:
+    image: qmcgaw/gluetun
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - VPN_SERVICE_PROVIDER=protonvpn
+      - VPN_TYPE=wireguard
+      - WIREGUARD_PRIVATE_KEY=xxx
+      - WIREGUARD_ADDRESSES=10.2.0.2/32
+    ports:
+      - "0.0.0.0:9500:5900/tcp"
+      - 51413:51413/tcp
+      - 51413:51413/udp
+  chrome:
+    image: siomiz/chrome
+    container_name: chrome
+    network_mode: "service:vpnchrome"
+    shm_size: 512m
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    restart: unless-stopped
+

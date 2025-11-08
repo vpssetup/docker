@@ -1,0 +1,51 @@
+services:
+  code:
+    image: lscr.io/linuxserver/code-server:latest
+    restart: unless-stopped
+    ports:
+      - "8443:8443"
+      - "3000:3000"
+    environment:
+      - PASSWORD=ymvF6B1AXR
+      - TZ=Asia/Karachi
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - ./project:/config/workspace
+      - ./startup.sh:/custom-cont-init.d/10-install-node.sh:ro
+    container_name: code
+    networks:
+      - coder
+
+  code-ide:
+    image: alpine/socat:latest
+    command: tcp-listen:80,fork tcp:code:8443
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - code
+    container_name: code-ide
+    networks:
+      - coder
+      - nginx
+
+  code-pre:
+    image: alpine/socat:latest
+    command: tcp-listen:80,fork tcp:code:3000
+    restart: unless-stopped
+    env_file:
+      - .pre.env
+    depends_on:
+      - code
+    container_name: code-pre
+    networks:
+      - coder
+      - nginx
+
+networks:
+  coder:
+    driver: bridge
+  nginx:
+    external: true
+    name: nginx-proxy
